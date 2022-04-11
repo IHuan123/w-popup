@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "uni-app",
+  "usingComponents": {
+    "w-popup": "/uni_modules/w-popup/components/w-popup/w-popup"
+  }
+}
