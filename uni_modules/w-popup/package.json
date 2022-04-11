@@ -1,7 +1,7 @@
 {
   "id": "w-popup",
   "displayName": "w-popup",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "基于wxs可滑动底部弹出层组件",
   "keywords": [
     "w-popup",
@@ -45,7 +45,7 @@
       },
       "client": {
         "App": {
-          "app-vue": "y",
+          "app-vue": "n",
           "app-nvue": "n"
         },
         "H5-mobile": {

@@ -1,5 +1,5 @@
 <template>
-  <view class="popup-container">
+  <view class="popup-container"  @touchmove.native.stop.prevent>
     <view :class="['mask']" :style="{zIndex:zIndex-1}" :catchtouchmove="true" v-if="showPopup"
           :data-component-info="componentInfo" @click="popup.closePopup"/>
     <view :catchtouchmove="true" :class="['popup-box popup-transition']"
@@ -25,7 +25,9 @@ var startTop = 0
 var currentTop = 0
 var distanceTop = 0
 function touchstart(event, ownerInstance) {
+
   var pageY = (event.touches[0] || event.changedTouches[0]).pageY;
+  console.log(pageY)
   popupInstance = ownerInstance.selectComponent(".popup-box");
   var dataset = event.instance.getDataset()
   componentInfo = dataset.componentInfo;
@@ -84,7 +86,6 @@ function closePopup(event, ownerInstance) {
   }
 
   popupInstance.setStyle({
-    top: "",
     height: componentInfo.popupH + 'px',
   })
   ownerInstance.callMethod("handlePopup", {show: false})
@@ -103,7 +104,8 @@ module.exports = {
 export default {
   emits:{
     "close": null,
-    "open": null
+    "open": null,
+    "update:modelValue":null
   },
   props: {
     zIndex: {

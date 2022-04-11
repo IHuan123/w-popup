@@ -5,7 +5,9 @@ var startTop = 0
 var currentTop = 0
 var distanceTop = 0
 function touchstart(event, ownerInstance) {
+
   var pageY = (event.touches[0] || event.changedTouches[0]).pageY;
+  console.log(pageY)
   popupInstance = ownerInstance.selectComponent(".popup-box");
   var dataset = event.instance.getDataset()
   componentInfo = dataset.componentInfo;
@@ -64,7 +66,6 @@ function closePopup(event, ownerInstance) {
   }
 
   popupInstance.setStyle({
-    top: "",
     height: componentInfo.popupH + 'px',
   })
   ownerInstance.callMethod("handlePopup", {show: false})
@@ -78,4 +79,4 @@ module.exports = {
   closePopup: closePopup,
 }
 </wxs>
-<view class="popup-container data-v-0d4a68c2"><block wx:if="{{showPopup}}"><view class="{{['data-v-0d4a68c2','mask','z-index-'+zIndex]}}" catchtouchmove="{{true}}" data-component-info="{{componentInfo}}" bindtap="{{popup.closePopup}}"></view></block><view class="{{['data-v-0d4a68c2','popup-box popup-transition']}}" style="{{'top:'+(top+'px')+';'+('height:'+(height+'rpx')+';')+('z-index:'+(zIndex)+';')}}" catchtouchmove="{{true}}"><view class="move-btn flex row data-v-0d4a68c2" style="{{'pointer-events:'+(showPopup?'auto':'none')+';'}}" data-component-info="{{componentInfo}}" id="popup-move-btn" bindtouchstart="{{popup.touchstart}}" bindtouchmove="{{popup.touchmove}}" bindtouchend="{{popup.touchend}}"><view class="line data-v-0d4a68c2"></view></view><slot></slot></view></view>
+<view data-event-opts="{{[['touchmove',[['',['$event']]]]]}}" class="popup-container data-v-0d4a68c2" catchtouchmove="__e"><block wx:if="{{showPopup}}"><view class="{{['data-v-0d4a68c2','mask']}}" style="{{'z-index:'+(zIndex-1)+';'}}" catchtouchmove="{{true}}" data-component-info="{{componentInfo}}" bindtap="{{popup.closePopup}}"></view></block><view class="{{['data-v-0d4a68c2','popup-box popup-transition']}}" style="{{'top:'+(top+'px')+';'+('height:'+(height+'rpx')+';')+('z-index:'+(zIndex)+';')}}" catchtouchmove="{{true}}"><view class="move-btn flex row data-v-0d4a68c2" style="{{'pointer-events:'+(showPopup?'auto':'none')+';'}}" data-component-info="{{componentInfo}}" id="popup-move-btn" bindtouchstart="{{popup.touchstart}}" bindtouchmove="{{popup.touchmove}}" bindtouchend="{{popup.touchend}}"><view class="line data-v-0d4a68c2"></view></view><slot></slot></view></view>
