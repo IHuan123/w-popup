@@ -1,6 +1,6 @@
 <template>
   <view class="popup-container">
-    <view :class="['mask','z-index-' + zIndex]" :catchtouchmove="true" v-if="showPopup"
+    <view :class="['mask']" :style="{zIndex:zIndex-1}" :catchtouchmove="true" v-if="showPopup"
           :data-component-info="componentInfo" @click="popup.closePopup"/>
     <view :catchtouchmove="true" :class="['popup-box popup-transition']"
           :style="{top: top + 'px',height: height + 'rpx',zIndex:zIndex}">
@@ -144,17 +144,27 @@ export default {
     }
   },
   watch:{
-    modelValue(newVal){
-      this.handlePopup({show:newVal})
-      if(newVal){
-        this.$emit("open")
-      }else{
-        this.$emit("close")
+    // #ifdef VUE3
+    modelValue:{
+      immediate: true,
+      handler(newVal){
+        this.handlePopup({show:newVal})
+        if(newVal){
+          this.$emit("open")
+        }else{
+          this.$emit("close")
+        }
       }
     },
-    value(newVal){
-      this.handlePopup({show:newVal})
-    },
+    // #endif
+    // #ifndef VUE3
+    value:{
+      immediate: true,
+      handler(newVal){
+        this.handlePopup({show:newVal})
+      }
+    }
+    // #endif
   },
   methods: {
     handlePopup(res) {
