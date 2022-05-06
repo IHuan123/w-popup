@@ -1,8 +1,8 @@
 <template>
   <view>
     <button @click="show = true">show</button>
-    <w-popup v-model="show" ref="el" :z-index="1200" :height="1200">
-      <div style="text-align:center;height: 100%;display: flex;align-items: center;justify-content: center;background: red">hello</div>
+    <w-popup safe-area-inset-bottom v-model="show" :z-index="1200" :height="1000">
+      <view style="height: 100%;background: #AED581"></view>
     </w-popup>
   </view>
 </template>
@@ -11,7 +11,8 @@
 export default {
   data(){
     return {
-      show:false
+      show:false,
+
     }
   },
 }

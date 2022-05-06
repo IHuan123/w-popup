@@ -1,9 +1,12 @@
 <template>
-  <view class="popup-container"  @touchmove.native.stop.prevent>
-    <view :class="['mask']" :style="{zIndex:zIndex-1}" :catchtouchmove="true" v-if="showPopup"
+  <view class="popup-container" @touchmove.native.stop.prevent>
+    <view :class="['mask',showPopup?'show-mask':'hide-mask']" :style="{zIndex:zIndex-1}" :catchtouchmove="true"
+          v-if="showMask"
           :data-component-info="componentInfo" @click="popup.closePopup"/>
-    <view :catchtouchmove="true" :class="['popup-box popup-transition']"
-          :style="{top: top + 'px',height: height + 'rpx',zIndex:zIndex}">
+    <view
+        :catchtouchmove="true"
+        :class="['popup-box popup-transition',safeAreaInsetBottom ? 'safe-area-inset-bottom':'']"
+        :style="{transform:`translate3d(0,${ translateY }px,0)`,height: popupH + 'px',zIndex:zIndex}">
       <view class="move-btn flex row"
             :data-component-info="componentInfo"
             id="popup-move-btn"
@@ -14,28 +17,33 @@
       >
         <view class="line"></view>
       </view>
-      <slot/>
+      <view class="content-box" :style="{height:height+'rpx'}">
+        <slot/>
+      </view>
     </view>
   </view>
 </template>
 <script lang="wxs" module="popup">
 var componentInfo = null
 var popupInstance = null
-var startTop = 0
-var currentTop = 0
-var distanceTop = 0
+var startTranslateY = 0 //手势开始的translateY
+var currentTop = 0 //当前popup的translateY
+var distanceTop = 0 //手指在滑动块中距离滑动块顶部距离
 function touchstart(event, ownerInstance) {
-
   var pageY = (event.touches[0] || event.changedTouches[0]).pageY;
-  console.log(pageY)
   popupInstance = ownerInstance.selectComponent(".popup-box");
   var dataset = event.instance.getDataset()
   componentInfo = dataset.componentInfo;
-  startTop = componentInfo.windowH - componentInfo.popupH;
-  distanceTop = pageY - startTop;
-  currentTop = pageY - distanceTop
+
+  var popupStartTop = componentInfo.windowH - componentInfo.popupH;
+  distanceTop = pageY - popupStartTop;
+
+  startTranslateY = componentInfo.popupH;
+
+  currentTop = componentInfo.popupH;
+  var translateY = componentInfo.popupH;
   popupInstance.setStyle({
-    top: pageY - distanceTop + 'px',
+    transform: 'translate3d(0,' + -translateY + 'px,0)'
   })
   if (popupInstance.hasClass("popup-transition")) {
     popupInstance.removeClass("popup-transition")
@@ -45,10 +53,11 @@ function touchstart(event, ownerInstance) {
 
 function touchmove(event) {
   var pageY = (event.touches[0] || event.changedTouches[0]).pageY;
-  if (currentTop < startTop) return;
-  currentTop = pageY;
+  var translateY = componentInfo.windowH - pageY + distanceTop
+  if (currentTop > startTranslateY + 10) return;
+  currentTop = componentInfo.windowH - pageY + distanceTop;
   popupInstance.setStyle({
-    top: pageY - distanceTop + 'px',
+    transform: 'translate3d(0,' + -translateY + 'px,0)',
     height: componentInfo.popupH + 'px'
   })
   return false
@@ -65,12 +74,11 @@ function touchcancel(event, ownerInstance) {
 function handleTouch(event, ownerInstance) {
   var ph = componentInfo.popupH;
   popupInstance.addClass("popup-transition")
-  if (currentTop - startTop < ph * 1 / 4) {
+  if (startTranslateY - currentTop < ph * 1 / 4) {
     popupInstance.setStyle({
-      top: startTop + 'px',
+      transform: 'translate3d(0,' + -ph + 'px,0)',
       height: componentInfo.popupH + 'px'
     })
-
     ownerInstance.callMethod('handlePopup', {show: true});
   } else {
     closePopup(event, ownerInstance)
@@ -78,13 +86,13 @@ function handleTouch(event, ownerInstance) {
   return false
 }
 
+//关闭
 function closePopup(event, ownerInstance) {
   if (!popupInstance) {
     popupInstance = ownerInstance.selectComponent(".popup-box");
     var dataset = event.instance.getDataset()
     componentInfo = dataset.componentInfo;
   }
-
   popupInstance.setStyle({
     height: componentInfo.popupH + 'px',
   })
@@ -102,10 +110,10 @@ module.exports = {
 
 <script>
 export default {
-  emits:{
+  emits: {
     "close": null,
     "open": null,
-    "update:modelValue":null
+    "update:modelValue": null
   },
   props: {
     zIndex: {
@@ -116,54 +124,72 @@ export default {
       type: Number,
       default: 1000
     },
-    value:{
-      type:Boolean,
+    value: {
+      type: Boolean,
       default: false
     },
-    modelValue:{
-      type:Boolean,
+    modelValue: {
+      type: Boolean,
       default: false
-    }
+    },
+    safeAreaInsetBottom: Boolean
   },
-  data(){
+  data() {
     return {
-      showPopup:false
+      showPopup: false,
+      showMask: false
     }
   },
   computed: {
     systemInfo() {
       return uni.getSystemInfoSync();
     },
+    safeAreaBottom() {
+      return this.systemInfo.screenHeight - this.systemInfo.safeArea.bottom
+    },
+    popupH() {
+      return uni.upx2px(this.height) + uni.upx2px(50) + (this.safeAreaInsetBottom ? this.safeAreaBottom : 0)
+    },
     componentInfo() {
       return {
         moveBtn: uni.upx2px(50),
-        popupH: uni.upx2px(this.height),
+        popupH: this.popupH,
         windowH: this.systemInfo.windowHeight,
+        safeAreaBottom: this.safeAreaBottom
       }
     },
-    top() {
-      return this.showPopup ? this.componentInfo.windowH - this.componentInfo.popupH : this.componentInfo.windowH
+    translateY() {
+      return this.showPopup ? -this.popupH : 0
     }
   },
-  watch:{
+  watch: {
+    showPopup(newVal) {
+      if (newVal) {
+        this.showMask = newVal
+      } else {
+        setTimeout(() => {
+          this.showMask = newVal
+        }, 200)
+      }
+    },
     // #ifdef VUE3
-    modelValue:{
+    modelValue: {
       immediate: true,
-      handler(newVal){
-        this.handlePopup({show:newVal})
-        if(newVal){
+      handler(newVal) {
+        this.handlePopup({show: newVal})
+        if (newVal) {
           this.$emit("open")
-        }else{
+        } else {
           this.$emit("close")
         }
       }
     },
     // #endif
     // #ifndef VUE3
-    value:{
+    value: {
       immediate: true,
-      handler(newVal){
-        this.handlePopup({show:newVal})
+      handler(newVal) {
+        this.handlePopup({show: newVal})
       }
     }
     // #endif
@@ -172,17 +198,17 @@ export default {
     handlePopup(res) {
       this.showPopup = res.show;
       // #ifndef VUE3
-      this.$emit("input",res.show)
+      this.$emit("input", res.show)
       // #endif
       // #ifdef VUE3
-      this.$emit("update:modelValue",res.show)
+      this.$emit("update:modelValue", res.show)
       // #endif
     },
     open() {
-      this.handlePopup({show:true})
+      this.handlePopup({show: true})
     },
     close() {
-      this.handlePopup({show:false})
+      this.handlePopup({show: false})
     },
   },
 

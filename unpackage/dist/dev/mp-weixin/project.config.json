@@ -34,9 +34,9 @@
     "useCompilerPlugins": false
   },
   "compileType": "miniprogram",
-  "libVersion": "2.23.4",
-  "appid": "wx4914ba22fd007137",
-  "projectname": "w-popup",
+  "libVersion": "2.24.1",
+  "appid": "touristappid",
+  "projectname": "w-popup示例",
   "condition": {},
   "editorSetting": {
     "tabIndent": "insertSpaces",
