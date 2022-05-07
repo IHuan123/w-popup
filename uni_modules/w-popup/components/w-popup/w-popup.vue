@@ -54,7 +54,7 @@ function touchstart(event, ownerInstance) {
 function touchmove(event) {
   var pageY = (event.touches[0] || event.changedTouches[0]).pageY;
   var translateY = componentInfo.windowH - pageY + distanceTop
-  if (currentTop > startTranslateY + 10) return;
+  if (currentTop > startTranslateY) return;
   currentTop = componentInfo.windowH - pageY + distanceTop;
   popupInstance.setStyle({
     transform: 'translate3d(0,' + -translateY + 'px,0)',
